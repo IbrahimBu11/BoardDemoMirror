@@ -19,8 +19,7 @@ public class Cell : MonoBehaviour
     }
     private void OnClick()
     {
-        GameEvents.ClickUpdateLocal?.Invoke(x, y);
-        GameEvents.OnPlayerScoreUpdateLocal.Invoke(0,10);
+        GameEvents.InputEvents.OnCellClickedLocal?.Invoke(x, y);
         button.interactable = false;
     }
 }

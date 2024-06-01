@@ -1,74 +1,80 @@
-using System;
 using System.Collections;
+using System.Collections.Generic;
 using Mirror;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : NetworkBehaviour
 {
-   public int index;
-   public int id;
-   [SyncVar (hook = nameof(OnPlayerScoreUpdated))] [SerializeField] private int _score;
-   [SyncVar (hook = nameof(OnSyncPlayedId))] [SerializeField] private int _id;
+   [SyncVar (hook = nameof(SetPlayerIDClient))] public int index;
+   [SyncVar(hook = nameof(SetPlayerScore))] public int score;
 
    private void Awake()
    {
-      GameEvents.OnPlayerScoreUpdateLocal += OnPlayerScoreReceived;
-      _id = (int)netId;
-
-      if (isLocalPlayer)
-      {
-         Board.localPlayerID = id;
-      }
-         
+      GameEvents.InputEvents.OnCellClickedLocal += OnCellClicked;
    }
    private void OnDestroy()
    {
-      GameEvents.OnPlayerScoreUpdateLocal -= OnPlayerScoreReceived;
+      GameEvents.InputEvents.OnCellClickedLocal -= OnCellClicked;
    }
 
-   private void OnSyncPlayedId(int oldId, int newId)
+   private void OnCellClicked(int x, int y)
    {
-      id = newId;
-   }
-
-   private void OnPlayerScoreReceived(int i, int score)
-   {
+      if(!isOwned)
+         return;
+      
       if (isServer)
       {
-         _score += score;
-         GameEvents.OnPlayerScoreUpdateSync?.Invoke(id, _score);
+         score += GameData.MetaData.ScorePerClick;
+         GameEvents.OnPlayerScoreUpdate?.Invoke(index, this.score);
       }
       else
-         TellServerScore(score);
-      
+      {
+         TellServerOfClick();
+      }
    }
 
    [Command]
-   private void TellServerScore(int score)
+   private void TellServerOfClick()
    {
-      _score += score;
+      score += GameData.MetaData.ScorePerClick;
+   }
+   private void SetPlayerScore(int oldScore, int newScore)
+   {
+         GameEvents.OnPlayerScoreUpdate?.Invoke(index, newScore);
+   }
+    
+
+
+
+   public override void OnStartClient()
+   {
+      base.OnStartClient();
+      if(isServerOnly)
+         StartCoroutine(Wait());
    }
 
-   
-
-   public override void OnStartServer()
-   {
-      id = (int) GetComponent<NetworkIdentity>().netId;
-      print("Server Start Called");
-      //base.OnStartServer();
-      StartCoroutine(WaitAndLaunch());
-   }
-
-   private IEnumerator WaitAndLaunch()
+   IEnumerator Wait()
    {
       yield return new WaitForSeconds(1);
-      GameEvents.OnPlayerJoinIndex.Invoke(id,index);
+      index = index;
+   }
+   
+   private void SetPlayerIDClient(int old, int newV)
+   {
+      index = newV;
+
+      if (isOwned)
+         Board.localPlayerID = index;
    }
 
-   private void OnPlayerScoreUpdated(int oldScore, int newScore)
+   [Command(requiresAuthority = false)]
+   public void SetPlayerIDServer(int _index)
    {
-      GameEvents.OnPlayerScoreUpdateSync?.Invoke(id, newScore);
+       this.index = _index;
    }
+    
+    
 }
 
 

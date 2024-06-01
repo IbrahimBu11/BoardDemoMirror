@@ -8,7 +8,7 @@ public class RoundsView : MonoBehaviour
     [SerializeField] private Image[] images;
     private void Awake()
     {
-        GameEvents.OnRoundIndexUpdateLocal += OnViewUpdate;
+        GameEvents.OnRoundCompleted += OnViewUpdate;
     }
 
     private void OnViewUpdate(int index)
@@ -21,6 +21,6 @@ public class RoundsView : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameEvents.OnRoundIndexUpdateLocal -= OnViewUpdate;
+        GameEvents.OnRoundCompleted -= OnViewUpdate;
     }
 }

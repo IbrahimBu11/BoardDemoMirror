@@ -12,7 +12,13 @@ public class BoardView : MonoBehaviour
     private void Awake()
     {
         GameEvents.ClickUpdateSync += OnCellClick;
-        GameEvents.OnRoundIndexUpdateLocal += GenerateGrid;
+        GameEvents.OnGameStart += GenerateGridStart;
+        GameEvents.OnRoundCompleted += GenerateGrid;
+    }
+
+    private void GenerateGridStart()
+    {
+        GenerateGrid(0);
     }
 
     public bool IsGridFinished()
@@ -32,7 +38,8 @@ public class BoardView : MonoBehaviour
     private void OnDestroy()
     {
         GameEvents.ClickUpdateSync -= OnCellClick;
-        GameEvents.OnRoundIndexUpdateLocal -= GenerateGrid;
+        GameEvents.OnGameStart -= GenerateGridStart;
+        GameEvents.OnRoundCompleted -= GenerateGrid;
     }
 
     private void GenerateGrid(int x)

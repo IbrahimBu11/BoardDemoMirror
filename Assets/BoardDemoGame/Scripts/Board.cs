@@ -1,89 +1,102 @@
+using System.Collections;
 using Mirror;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Board : NetworkBehaviour
 {
-    [SyncVar (hook = nameof(OnCellClicked))] [SerializeField] private Vector2 cellClicked;
-    [SyncVar (hook = nameof(OnRoundCompleted))] [SerializeField] private int RoundIndex;
-    [SyncVar (hook = nameof(OnIndexChanged))] [SerializeField] private int currentIndex;
-
-    public int turnCap = 0;
-
+    [SyncVar][SerializeField] private bool isTurnEven;
+    
     public static int localPlayerID;
-    private bool _isLocalTurnEven;
+    [SerializeField] private bool isLocalTurnEven;
 
     [SerializeField] private BoardView _boardView;
     [SerializeField] private GameObject blocker;
     
     public void Awake()
     {
-        GameEvents.ClickUpdateLocal += OnCellClickedBroadCast;
-        GameEvents.OnRoundIndexUpdateLocal += OnRoundCompletedlocal;
+        GameEvents.InputEvents.OnCellClickedLocal += OnCellClickedLocal;
     }
-
-    private void Start()
-    {
-        _isLocalTurnEven = localPlayerID % 2 == 0;
-        blocker.SetActive(_isLocalTurnEven);
-    }
-
-    private void OnRoundCompletedlocal(int index)
-    {
-        if(isServer)
-            RoundIndex = index;
-    }
-
     public  void OnDestroy()
     {
-        GameEvents.ClickUpdateLocal -= OnCellClickedBroadCast;
-        GameEvents.OnRoundIndexUpdateLocal -= OnRoundCompletedlocal;
+        GameEvents.InputEvents.OnCellClickedLocal -= OnCellClickedLocal;
     }
-    private void OnRoundCompleted(int old, int newV)
+
+    public override void OnStartClient()
     {
-        GameEvents.OnRoundIndexUpdateLocal.Invoke(newV);
+        StartCoroutine(Wait());
+    }
+
+
+    IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(2f);
+        isLocalTurnEven = localPlayerID % 2 == 0;
+        print($"islocal turn even :{localPlayerID} {isLocalTurnEven}");
+        blocker.SetActive(isLocalTurnEven);
     }
     
-    private void OnCellClicked(Vector2 OldVal, Vector2 newVal)
-    {
-        GameEvents.ClickUpdateSync?.Invoke((int)newVal.x,(int)newVal.y);
-        
-        if (!_boardView.IsGridFinished()) return;
-        GameData.roundIndex++; 
-        GameEvents.OnRoundIndexUpdateLocal?.Invoke(GameData.roundIndex);
-    }
-
-    private void OnIndexChanged(int oldValue, int newValue)
-    {
-        bool isEven = newValue % 2 == 0;
-        blocker.SetActive(!isEven && !_isLocalTurnEven);
-
-        
-        if (turnCap < 2) return;
-        turnCap = 0;
-        currentIndex++;
-    }
-
-
+    
     [Command(requiresAuthority = false)]
-    private void TellServerCellclick(Vector2 newVal)
+    private void TellServerCellclick(int x, int y)
     {
-        print($"On Cell clicked Working {newVal}");
-        GameEvents.ClickUpdateSync?.Invoke((int)newVal.x,(int)newVal.y);
+        ProcessTurn(x,y);
+    }
 
+    [ClientRpc]
+    private void UpdateClickViewClient(int x,int y)
+    {
+        GameEvents.ClickUpdateSync?.Invoke(x,y);
+        
+    }
+
+    private void ProcessTurn(int x, int y)
+    {
+        GameEvents.ClickUpdateSync?.Invoke(x,y);
+
+        GameData.RunTimeData.currentClickCount++;
+
+        if (GameData.RunTimeData.currentClickCount >= GameData.MetaData.TurnCap)
+        {
+            GameData.RunTimeData.currentTurnIndex++;
+            GameData.RunTimeData.currentClickCount = 0;
+        }
+        
+        bool isEven = GameData.RunTimeData.currentTurnIndex % 2 == 0;
+        isTurnEven = isEven;
+        
+        print($"IsLocalPlayer even {isLocalTurnEven} : Turn : {isTurnEven}");
+        UpdateClickViewClient(x,y);
+        
         if (_boardView.IsGridFinished())
         {
-            GameData.roundIndex++; 
-            GameEvents.OnRoundIndexUpdateLocal?.Invoke(GameData.roundIndex);
+            OnRoundCompletedClient(isTurnEven);
         }
     }
 
-    private void OnCellClickedBroadCast(int x, int y)
+    [ClientRpc]
+    private void OnRoundCompletedClient(bool isTurnEven)
     {
-        if(isServer)
-            cellClicked = new Vector2(x,y);
-        else
-            TellServerCellclick(new Vector2(x, y));
+        GameData.RunTimeData.RoundIndex++; 
+        GameEvents.OnRoundCompleted?.Invoke(GameData.RunTimeData.RoundIndex);
         
-        turnCap++;
+        blocker.SetActive(IsMyTurn());
+    }
+
+    private bool IsMyTurn()
+    {
+        return isLocalTurnEven == isTurnEven;
+    }
+
+    private void OnCellClickedLocal(int x, int y)
+    {
+        if (isServer)
+        {
+            ProcessTurn(x,y);
+        }
+        else if(isClient)
+            TellServerCellclick(x, y);
+        
+        
     }
 }

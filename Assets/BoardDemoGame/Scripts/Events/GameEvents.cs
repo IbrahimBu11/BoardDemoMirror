@@ -4,20 +4,38 @@ public delegate void OnScoreUpdate(int id,int score);
 public delegate void OnRoundIndexUpdate(int index);
 public delegate void OnBoardClickIndexUpdate(int x, int y);
 
-public static class GameEvents
+public static partial class GameEvents
 {
-    public static OnScoreUpdate OnPlayerScoreUpdateLocal;
-    public static OnScoreUpdate OnPlayerScoreUpdateSync;
+    public static OnScoreUpdate OnPlayerScoreUpdate;
     
-    public static OnRoundIndexUpdate OnRoundIndexUpdateLocal;
-    
-    public static OnBoardClickIndexUpdate ClickUpdateLocal;
+    public static OnRoundIndexUpdate OnRoundCompleted;
     public static OnBoardClickIndexUpdate ClickUpdateSync;
 
-    public static Action<bool> OnTurnEnabled;
-    public static Action<int,int> OnPlayerJoinIndex;
+    public static Action OnGameStart;
+    public static Action OnAllPlayersCConnected;
+
 }
+
+public static partial class GameEvents
+{
+    public static class InputEvents
+    {
+        public static OnBoardClickIndexUpdate OnCellClickedLocal;
+    }
+}
+
 public static class GameData
 {
-    public static int roundIndex = 0;
+    public static class MetaData
+    {
+        public const int TurnCap = 2;
+        public const int ScorePerClick = 10;
+    }
+
+    public static class RunTimeData
+    {
+        public static int RoundIndex;
+        public static int currentTurnIndex = 1;
+        public static int currentClickCount;
+    }
 }

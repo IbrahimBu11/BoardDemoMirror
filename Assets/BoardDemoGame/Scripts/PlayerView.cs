@@ -10,28 +10,19 @@ public class PlayerView : MonoBehaviour
 
     private void Awake()
     {
-        GameEvents.OnPlayerScoreUpdateSync += OnScoreUpdate;  
-        GameEvents.OnPlayerJoinIndex += OnPlayerJoin;  
+        GameEvents.OnPlayerScoreUpdate += OnScoreUpdate;
     }
     private void OnDestroy()
     {
-        GameEvents.OnPlayerScoreUpdateSync -= OnScoreUpdate;
-        GameEvents.OnPlayerJoinIndex -= OnPlayerJoin;  
+        GameEvents.OnPlayerScoreUpdate -= OnScoreUpdate;
     }
+    
 
-    private void OnPlayerJoin(int _id, int _index)
+
+    private void OnScoreUpdate(int _index,int _score)
     {
         if(index != _index)
             return;
-        
-        id = _id;
-    }
-
-
-    private void OnScoreUpdate(int _id,int _score)
-    {
-        //if(_id != id)
-           // return;
         
         this.score.SetText(_score.ToString());
     }
