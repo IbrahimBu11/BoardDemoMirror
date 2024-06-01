@@ -13,6 +13,11 @@ public class RoundsView : MonoBehaviour
 
     private void OnViewUpdate(int index)
     {
+        foreach (var v in images)
+        {
+            v.color = Color.white;
+        }
+        
         for (int i = 0; i < index; i++)
         {
             images[i].color = Color.green;

@@ -20,6 +20,7 @@ public class Player : NetworkBehaviour
 
    private void OnCellClicked(int x, int y)
    {
+      
       if(!isOwned)
          return;
       

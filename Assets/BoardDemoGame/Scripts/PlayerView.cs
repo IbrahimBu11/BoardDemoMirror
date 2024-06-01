@@ -5,18 +5,25 @@ using UnityEngine;
 public class PlayerView : MonoBehaviour
 {
     [SerializeField] private int index;
+    [SerializeField] private GameObject highlight;
     [SerializeField] private TextMeshProUGUI score;
-    [SerializeField] public int id;
 
     private void Awake()
     {
         GameEvents.OnPlayerScoreUpdate += OnScoreUpdate;
+        GameEvents.OnTurnViewUpdate += OnTurnViewUpdate;
     }
     private void OnDestroy()
     {
         GameEvents.OnPlayerScoreUpdate -= OnScoreUpdate;
+        GameEvents.OnTurnViewUpdate -= OnTurnViewUpdate;
     }
-    
+
+    private void OnTurnViewUpdate(bool val)
+    {
+        bool isEven = index == 2;
+        highlight.SetActive(isEven != val);
+    }
 
 
     private void OnScoreUpdate(int _index,int _score)

@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 
 public class Board : NetworkBehaviour
 {
-    [SyncVar][SerializeField] private bool isTurnEven;
+    [SyncVar (hook = nameof(SetTurnVal))][SerializeField] private bool isTurnEven;
     
     public static int localPlayerID;
     [SerializeField] private bool isLocalTurnEven;
@@ -25,6 +25,10 @@ public class Board : NetworkBehaviour
     public override void OnStartClient()
     {
         StartCoroutine(Wait());
+        bool isEven = GameData.RunTimeData.CurrentTurnIndex % 2 == 0;
+        isTurnEven = isEven;
+        
+        GameEvents.OnTurnViewUpdate?.Invoke(isTurnEven);
     }
 
 
@@ -32,8 +36,8 @@ public class Board : NetworkBehaviour
     {
         yield return new WaitForSeconds(2f);
         isLocalTurnEven = localPlayerID % 2 == 0;
-        print($"islocal turn even :{localPlayerID} {isLocalTurnEven}");
-        blocker.SetActive(isLocalTurnEven);
+        
+        blocker.SetActive(IsMyTurn());
     }
     
     
@@ -47,40 +51,56 @@ public class Board : NetworkBehaviour
     private void UpdateClickViewClient(int x,int y)
     {
         GameEvents.ClickUpdateSync?.Invoke(x,y);
-        
+    }
+
+    private void SetTurnVal(bool oldVal, bool newVal)
+    {
+        isTurnEven = newVal;
+        blocker.SetActive(IsMyTurn());
+        GameEvents.OnTurnViewUpdate?.Invoke(isTurnEven);
     }
 
     private void ProcessTurn(int x, int y)
     {
         GameEvents.ClickUpdateSync?.Invoke(x,y);
 
-        GameData.RunTimeData.currentClickCount++;
+        GameData.RunTimeData.CurrentClickCount++;
 
-        if (GameData.RunTimeData.currentClickCount >= GameData.MetaData.TurnCap)
+        if (GameData.RunTimeData.CurrentClickCount >= GameData.MetaData.TurnCap)
         {
-            GameData.RunTimeData.currentTurnIndex++;
-            GameData.RunTimeData.currentClickCount = 0;
+            GameData.RunTimeData.CurrentTurnIndex++;
+            GameData.RunTimeData.CurrentClickCount = 0;
         }
         
-        bool isEven = GameData.RunTimeData.currentTurnIndex % 2 == 0;
+        bool isEven = GameData.RunTimeData.CurrentTurnIndex % 2 == 0;
         isTurnEven = isEven;
         
-        print($"IsLocalPlayer even {isLocalTurnEven} : Turn : {isTurnEven}");
         UpdateClickViewClient(x,y);
-        
+        UpdateTurn();
         if (_boardView.IsGridFinished())
         {
-            OnRoundCompletedClient(isTurnEven);
+            OnRoundCompletedClient();
+            
         }
     }
 
     [ClientRpc]
-    private void OnRoundCompletedClient(bool isTurnEven)
+    private void UpdateTurn()
+    {
+        blocker.SetActive(IsMyTurn());
+        GameEvents.OnTurnViewUpdate?.Invoke(isTurnEven);
+        print($"Is My turn : {IsMyTurn()} : {GameData.RunTimeData.CurrentClickCount} " +
+              $"{GameData.RunTimeData.CurrentTurnIndex}");
+    }
+
+    [ClientRpc]
+    private void OnRoundCompletedClient()
     {
         GameData.RunTimeData.RoundIndex++; 
+        if (GameData.RunTimeData.RoundIndex > GameData.MetaData.RoundCap)
+            GameData.RunTimeData.RoundIndex = 0;
         GameEvents.OnRoundCompleted?.Invoke(GameData.RunTimeData.RoundIndex);
         
-        blocker.SetActive(IsMyTurn());
     }
 
     private bool IsMyTurn()
@@ -94,7 +114,7 @@ public class Board : NetworkBehaviour
         {
             ProcessTurn(x,y);
         }
-        else if(isClient)
+        else
             TellServerCellclick(x, y);
         
         
