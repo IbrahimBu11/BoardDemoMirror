@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/BoardDemoGame/Scenes/BoardGameNetworkManager.unity
+    guid: 569868ed63e2c0e48b2d4dbb4242415c
   m_configObjects: {}
