@@ -30,7 +30,7 @@ public class ConnectionController : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(GetPublicIPAddress());
+        //StartCoroutine(GetPublicIPAddress());
         //ipAddress.text = GetLocalIPAddress();
         
         startHost.onClick.AddListener(StartHost);
@@ -39,7 +39,7 @@ public class ConnectionController : MonoBehaviour
 
     private void StartHost()
     {
-        networkManager.networkAddress = ipAddress.text;
+       // networkManager.networkAddress = ipAddress.text;
         networkManager.StartHost();
         startHost.interactable = false;
         startClient.interactable = false;
@@ -50,7 +50,7 @@ public class ConnectionController : MonoBehaviour
 
     private void StartClient()
     {
-        networkManager.networkAddress = ipAddress.text;
+       // networkManager.networkAddress = ipAddress.text;
         networkManager.StartClient();
         startHost.interactable = false;
         startClient.interactable = false;
