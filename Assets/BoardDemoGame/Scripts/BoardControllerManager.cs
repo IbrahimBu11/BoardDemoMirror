@@ -6,18 +6,18 @@ public class BoardControllerManager : NetworkManager
 {
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        //base.OnServerConnect(conn);
-        if (!conn.isReady)
-        {
-            NetworkServer.SetClientReady(conn);
-        }
-        
-        GameObject playergo = Instantiate(playerPrefab);
-        Player player = playergo.GetComponent<Player>();
-        print($" player connected {numPlayers}");
-        
-        NetworkServer.AddPlayerForConnection(conn, playergo);
-        player.SetPlayerIDServer(numPlayers); 
+        base.OnServerConnect(conn);
+        // if (!conn.isReady)
+        // {
+        //     NetworkServer.SetClientReady(conn);
+        // }
+        //
+        // GameObject playergo = Instantiate(playerPrefab);
+        // Player player = playergo.GetComponent<Player>();
+        // print($" player connected {numPlayers}");
+        //
+        // NetworkServer.AddPlayerForConnection(conn, playergo);
+        // player.SetPlayerIDServer(numPlayers); 
         
         if (numPlayers == 2)
         {

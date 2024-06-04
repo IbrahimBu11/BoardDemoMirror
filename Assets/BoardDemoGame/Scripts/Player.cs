@@ -50,6 +50,7 @@ public class Player : NetworkBehaviour
 
    public override void OnStartClient()
    {
+      print("On Start Client player call");
       base.OnStartClient();
       if(isServerOnly)
          StartCoroutine(Wait());

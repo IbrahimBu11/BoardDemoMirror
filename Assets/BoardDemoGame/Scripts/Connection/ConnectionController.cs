@@ -30,8 +30,7 @@ public class ConnectionController : MonoBehaviour
 
     void Start()
     {
-        //StartCoroutine(GetPublicIPAddress());
-        //ipAddress.text = GetLocalIPAddress();
+       // ipAddress.text = GetLocalIPAddress();
         
         startHost.onClick.AddListener(StartHost);
         startClient.onClick.AddListener(StartClient);
@@ -46,6 +45,15 @@ public class ConnectionController : MonoBehaviour
         ipAddress.interactable = false;
 
         status.SetText("Connected as Host");
+
+        StartCoroutine(Wait());
+
+    }
+
+    IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(2f);
+        print($"Network Server started : {networkManager.isNetworkActive}");
     }
 
     private void StartClient()

@@ -750,7 +750,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 7777
+  port: 31799
   DualMode: 1
   NoDelay: 1
   Interval: 10
@@ -789,7 +789,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 2816348668128435076}
-  networkAddress: localhost
+  networkAddress: d7394630a203.pr.edgegap.net
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60

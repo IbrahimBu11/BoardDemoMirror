@@ -48,8 +48,8 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  id: 0
-  _score: 0
+  index: 0
+  score: 0
 --- !u!114 &-7243406133779552165
 MonoBehaviour:
   m_ObjectHideFlags: 0
